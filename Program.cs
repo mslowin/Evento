@@ -2,6 +2,7 @@ using Evento.Evento.Core.Repositories;
 using Evento.Evento.Infrastructure.Mappers;
 using Evento.Evento.Infrastructure.Repositories;
 using Evento.Evento.Infrastructure.Services;
+using Evento.Evento.Infrastructure.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -21,6 +22,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddSingleton(AutoMapperConfig.Initialize());
+var jwtSettings = builder.Configuration.GetSection("jwt").Get<JwtSettings>();      // <---
+//var url = jwtSettings.Url;
 
 builder.Services.AddAuthentication(options =>
 {
@@ -31,10 +34,11 @@ builder.Services.AddAuthentication(options =>
 {
     o.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidIssuer = builder.Configuration["http://localhost:7175"],
+        //ValidIssuer = builder.Configuration["http://localhost:7175"],
+        ValidIssuer = jwtSettings.Issuer,
         //ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey
-        (Encoding.UTF8.GetBytes(builder.Configuration["secret"])),
+        (Encoding.UTF8.GetBytes(builder.Configuration[jwtSettings.Key])),
         ValidateIssuer = true,
         ValidateAudience = false,
         ValidateLifetime = false,
