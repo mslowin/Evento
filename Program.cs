@@ -4,6 +4,8 @@ using Evento.Evento.Infrastructure.Repositories;
 using Evento.Evento.Infrastructure.Services;
 using Evento.Evento.Infrastructure.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -21,9 +23,10 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IJwtHandler, JwtHandler>();
 builder.Services.AddSingleton(AutoMapperConfig.Initialize());
-var jwtSettings = builder.Configuration.GetSection("jwt").Get<JwtSettings>();      // <---
-//var url = jwtSettings.Url;
+//var jwtSettings = builder.Configuration.GetSection("jwt").Get<IOptions<JwtSettings>>();      
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("jwt"));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -32,17 +35,16 @@ builder.Services.AddAuthentication(options =>
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(o =>
 {
+    var config = builder.Services.BuildServiceProvider().GetRequiredService<IOptions<JwtSettings>>().Value;
+    var test = Encoding.UTF8.GetBytes(builder.Configuration[config.Key]);           // <--- tu b³¹d jakiœ
     o.TokenValidationParameters = new TokenValidationParameters
     {
-        //ValidIssuer = builder.Configuration["http://localhost:7175"],
-        ValidIssuer = jwtSettings.Issuer,
-        //ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey
-        (Encoding.UTF8.GetBytes(builder.Configuration[jwtSettings.Key])),
+        ValidIssuer = config.Issuer,
         ValidateIssuer = true,
         ValidateAudience = false,
         ValidateLifetime = false,
-        ValidateIssuerSigningKey = true
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration[config.Key]))
     };
 });
 builder.Services.AddAuthorization();
@@ -60,9 +62,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
-
 app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.MapControllers();
 
