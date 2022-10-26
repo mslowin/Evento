@@ -36,15 +36,16 @@ builder.Services.AddAuthentication(options =>
 }).AddJwtBearer(o =>
 {
     var config = builder.Services.BuildServiceProvider().GetRequiredService<IOptions<JwtSettings>>().Value;
-    var test = Encoding.UTF8.GetBytes(builder.Configuration[config.Key]);           // <--- tu b³¹d jakiœ
+    //var test = Encoding.UTF8.GetBytes(builder.Configuration[config.Key]);           // <--- tu b³¹d jakiœ
     o.TokenValidationParameters = new TokenValidationParameters
     {
         ValidIssuer = config.Issuer,
-        ValidateIssuer = true,
+        //ValidateIssuer = true,
         ValidateAudience = false,
-        ValidateLifetime = false,
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration[config.Key]))
+        //ValidateLifetime = false,
+        //ValidateIssuerSigningKey = true,
+        //IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration[config.Key]))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("jwt:key").Value))
     };
 });
 builder.Services.AddAuthorization();
