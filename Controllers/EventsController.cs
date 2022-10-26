@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Evento.Controllers
 {
     [Route("[controller]")]
-    //[Authorize(Policy = "HasAdminRole")]
+    [Authorize(Policy = "HasAdminRole")]
     public class EventsController : ApiControllerBase
     {
         private readonly IEventService _eventService;
@@ -18,6 +18,7 @@ namespace Evento.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Get(string name)
         {
             var events = await _eventService.BrowseAsync(name);
@@ -26,7 +27,7 @@ namespace Evento.Controllers
         }
 
         [HttpGet("{eventId}")]
-        //[AllowAnonymous]
+        [AllowAnonymous]
         public async Task<IActionResult> Get(Guid eventId)
         {
             var @event = await _eventService.GetAsync(eventId);
