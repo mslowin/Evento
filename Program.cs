@@ -6,19 +6,23 @@ using Evento.Evento.Infrastructure.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Owin.Logging;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddMvc().AddJsonOptions(x => x.JsonSerializerOptions.WriteIndented = true);
+builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IEventService, EventService>();
@@ -45,7 +49,6 @@ builder.Services.AddAuthentication(options =>
 });
 builder.Services.AddAuthorization(x => x.AddPolicy("HasAdminRole", p => p.RequireRole("admin")));
 
-
 var app = builder.Build();
 
 
@@ -64,4 +67,5 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.Logger.LogInformation("Starting the app");
 app.Run();

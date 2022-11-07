@@ -12,11 +12,13 @@ namespace Evento.Evento.Infrastructure.Services
     {
         private readonly IEventRepository _eventRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger _logger;
 
-        public EventService(IEventRepository eventRepository, IMapper mapper)
+        public EventService(IEventRepository eventRepository, IMapper mapper, ILogger<EventService> logger)
         {
             _eventRepository = eventRepository;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<EventDetailsDto> GetAsync(Guid id)
@@ -35,6 +37,7 @@ namespace Evento.Evento.Infrastructure.Services
 
         public async Task<IEnumerable<EventDto>> BrowseAsync(string? name = null)
         {
+            _logger.LogTrace("Fetching events");
             var events = await _eventRepository.BrowseAsync(name);
 
             return _mapper.Map<IEnumerable<EventDto>>(events);
