@@ -29,8 +29,10 @@ builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IJwtHandler, JwtHandler>();
 builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<IDataInitializer, DataInitializer>();
 builder.Services.AddSingleton(AutoMapperConfig.Initialize());
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("jwt"));
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("app"));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -67,5 +69,21 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+SeedData(app);
 app.Logger.LogInformation("Starting the app");
 app.Run();
+
+
+void SeedData(IApplicationBuilder app)
+{
+    var settings = app.ApplicationServices.GetService<IOptions<AppSettings>>();
+    if (settings!.Value.SeedData)
+    {
+        //var dataInitializer = app.ApplicationServices.GetService<IDataInitializer>();
+        //dataInitializer.SeedAsync();
+
+        var scope = app.ApplicationServices.CreateScope();
+        var service = scope.ServiceProvider.GetService<IDataInitializer>();
+        service!.SeedAsync();
+    }
+}
