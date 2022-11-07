@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Owin.Logging;
 using System.Text;
+using Evento.Framework;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
@@ -70,6 +71,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 SeedData(app);
+app.UseErrorHandler();
 app.Logger.LogInformation("Starting the app");
 app.Run();
 
@@ -79,9 +81,6 @@ void SeedData(IApplicationBuilder app)
     var settings = app.ApplicationServices.GetService<IOptions<AppSettings>>();
     if (settings!.Value.SeedData)
     {
-        //var dataInitializer = app.ApplicationServices.GetService<IDataInitializer>();
-        //dataInitializer.SeedAsync();
-
         var scope = app.ApplicationServices.CreateScope();
         var service = scope.ServiceProvider.GetService<IDataInitializer>();
         service!.SeedAsync();
