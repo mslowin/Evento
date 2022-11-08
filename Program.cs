@@ -75,7 +75,6 @@ app.UseErrorHandler();
 app.Logger.LogInformation("Starting the app");
 app.Run();
 
-
 void SeedData(IApplicationBuilder app)
 {
     var settings = app.ApplicationServices.GetService<IOptions<AppSettings>>();
